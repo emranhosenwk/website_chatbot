@@ -11,7 +11,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
     
     def do_GET(self):
         if self.path == '/' or self.path == '':
-            self.path = '/index.html'
+            self.path = '/website_chatbot.html'
         return super().do_GET()
     
     def log_message(self, format, *args):
