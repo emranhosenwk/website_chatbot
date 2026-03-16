@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MediCare Clinic - Chat Assistant</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  
+  body {
+    font-family: 'Segoe UI', sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+
+  .demo-container {
+    width: 100%;
+    max-width: 480px;
+    background: white;
+    border-radius: 24px;
+    overflow: hidden;
+    box-shadow: 0 30px 60px rgba(0,0,0,0.3);
+  }
+
+  /* Header */
+  .chat-header {
+    background: linear-gradient(135deg, #1a73e8, #0d47a1);
+    padding: 20px;
+    color: white;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+  }
+
+  .clinic-avatar {
+    width: 50px;
+    height: 50px;
+    background: rgba(255,255,255,0.2);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+  }
+
+  .clinic-info h3 { font-size: 16px; font-weight: 600; }
+  .clinic-info p { font-size: 12px; opacity: 0.8; margin-top: 2px; }
+
+  .status-dot {
+    width: 10px; height: 10px;
+    background: #4caf50;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 5px;
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+  }
+
+  /* Quick Actions */
+  .quick-actions {
+    background: #f8f9ff;
+    padding: 12px 16px;
+    border-bottom: 1px solid #e0e7ff;
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .quick-btn {
+    background: white;
+    border: 1.5px solid #1a73e8;
+    color: #1a73e8;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 12px;
+    cursor: pointer;
+    white-space: nowrap;
+    font-weight: 500;
+    transition: all 0.2s;
+  }
+
+  .quick-btn:hover {
+    background: #1a73e8;
+    color: white;
+  }
+
+  /* Chat Area */
+  .chat-area {
+    height: 420px;
+    overflow-y: auto;
+    padding: 16px;
+    background: #f8f9ff;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .message {
+    display: flex;
+    gap: 10px;
+    align-items: flex-end;
+    animation: fadeIn 0.3s ease;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .message.user { flex-direction: row-reverse; }
+
+  .avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    flex-shrink: 0;
+  }
+
+  .bot-avatar { background: #e3f2fd; }
+  .user-avatar { background: #1a73e8; color: white; font-size: 12px; font-weight: bold; }
+
+  .bubble {
+    max-width: 75%;
+    padding: 10px 14px;
+    border-radius: 18px;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  .bot .bubble {
+    background: white;
+    color: #333;
+    border-bottom-left-radius: 4px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  }
+
+  .user .bubble {
+    background: #1a73e8;
+    color: white;
+    border-bottom-right-radius: 4px;
+  }
+
+  .time {
+    font-size: 10px;
+    color: #aaa;
+    margin-top: 4px;
+    text-align: center;
+  }
+
+  /* Option Buttons */
+  .options {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 8px;
+  }
+
+  .option-btn {
+    background: white;
+    border: 1.5px solid #1a73e8;
+    color: #1a73e8;
+    padding: 10px 16px;
+    border-radius: 12px;
+    font-size: 13px;
+    cursor: pointer;
+    text-align: left;
+    transition: all 0.2s;
+    font-weight: 500;
+  }
+
+  .option-btn:hover {
+    background: #1a73e8;
+    color: white;
+    transform: translateX(4px);
+  }
+
+  /* Doctor Card */
+  .doctor-card {
+    background: white;
+    border-radius: 16px;
+    padding: 14px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    margin-top: 8px;
+  }
+
+  .doctor-card h4 { color: #1a73e8; font-size: 15px; margin-bottom: 4px; }
+  .doctor-card p { font-size: 12px; color: #666; margin: 2px 0; }
+
+  .book-btn {
+    background: #1a73e8;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 13px;
+    cursor: pointer;
+    margin-top: 10px;
+    width: 100%;
+    font-weight: 600;
+    transition: background 0.2s;
+  }
+
+  .book-btn:hover { background: #0d47a1; }
+
+  /* Typing indicator */
+  .typing {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
+
+  .typing-dots {
+    display: flex;
+    gap: 4px;
+    background: white;
+    padding: 12px 16px;
+    border-radius: 18px;
+    border-bottom-left-radius: 4px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  }
+
+  .dot {
+    width: 8px;
+    height: 8px;
+    background: #1a73e8;
+    border-radius: 50%;
+    animation: bounce 1.2s infinite;
+  }
+
+  .dot:nth-child(2) { animation-delay: 0.2s; }
+  .dot:nth-child(3) { animation-delay: 0.4s; }
+
+  @keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-6px); }
+  }
+
+  /* Input Area */
+  .input-area {
+    padding: 14px 16px;
+    background: white;
+    border-top: 1px solid #eee;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
+
+  .input-area input {
+    flex: 1;
+    border: 1.5px solid #e0e7ff;
+    border-radius: 24px;
+    padding: 10px 18px;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .input-area input:focus { border-color: #1a73e8; }
+
+  .send-btn {
+    width: 42px;
+    height: 42px;
+    background: #1a73e8;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+    flex-shrink: 0;
+  }
+
+  .send-btn:hover { background: #0d47a1; }
+  .send-btn svg { width: 18px; height: 18px; fill: white; }
+
+  /* Powered by */
+  .powered {
+    text-align: center;
+    padding: 8px;
+    font-size: 11px;
+    color: #aaa;
+    background: white;
+  }
+</style>
+</head>
+<body>
+
+<div class="demo-container">
+  <!-- Header -->
+  <div class="chat-header">
+    <div class="clinic-avatar">🏥</div>
+    <div class="clinic-info">
+      <h3>MediCare Clinic Assistant</h3>
+      <p><span class="status-dot"></span>Online • Replies instantly</p>
+    </div>
+  </div>
+
+  <!-- Quick Actions -->
+  <div class="quick-actions">
+    <button class="quick-btn" onclick="quickAction('book')">📅 Book Appointment</button>
+    <button class="quick-btn" onclick="quickAction('doctors')">👨‍⚕️ Our Doctors</button>
+    <button class="quick-btn" onclick="quickAction('services')">🏥 Services</button>
+    <button class="quick-btn" onclick="quickAction('hours')">🕐 Hours</button>
+    <button class="quick-btn" onclick="quickAction('emergency')">🚨 Emergency</button>
+  </div>
+
+  <!-- Chat Area -->
+  <div class="chat-area" id="chatArea">
+    <!-- Welcome message -->
+    <div class="message bot">
+      <div class="avatar bot-avatar">🏥</div>
+      <div>
+        <div class="bubble">
+          👋 <b>Welcome to MediCare Clinic!</b><br><br>
+          I'm your virtual assistant. I can help you:<br>
+          📅 Book appointments<br>
+          👨‍⚕️ Find the right doctor<br>
+          💊 Answer health questions<br>
+          🏥 Learn about our services<br><br>
+          How can I help you today?
+        </div>
+        <div class="options">
+          <button class="option-btn" onclick="selectOption('Book an Appointment')">📅 Book an Appointment</button>
+          <button class="option-btn" onclick="selectOption('Show me the doctors')">👨‍⚕️ See Our Doctors</button>
+          <button class="option-btn" onclick="selectOption('What services do you offer?')">🏥 Our Services & Fees</button>
+          <button class="option-btn" onclick="selectOption('Emergency help')">🚨 Emergency Info</button>
+        </div>
+        <div class="time">Just now</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Input -->
+  <div class="input-area">
+    <input type="text" id="userInput" placeholder="Type your message..." 
+           onkeypress="if(event.key==='Enter') sendMessage()">
+    <button class="send-btn" onclick="sendMessage()">
+      <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+    </button>
+  </div>
+
+  <div class="powered">🤖 Powered by AI • MediCare Clinic</div>
+</div>
+
+<script>
+const GROQ_API_KEY = 'YOUR_GROQ_API_KEY_HERE';
+const chatArea = document.getElementById('chatArea');
+const userInput = document.getElementById('userInput');
+
+const CLINIC_INFO = `
+You are a helpful medical receptionist chatbot for MediCare Clinic.
+
+Clinic Info:
+- Address: 456 Health Avenue, New York, NY 10002
+- Phone: +1-212-555-0200
+- Hours: Mon-Fri: 8AM-8PM | Sat: 9AM-5PM | Sun: Emergency Only
+
+Doctors:
+- Dr. Sarah Johnson (General Physician) - $80/visit - Mon-Fri
+- Dr. Michael Chen (Cardiologist) - $150/visit - Mon, Wed, Fri
+- Dr. Emily Rodriguez (Dermatologist) - $120/visit - Tue, Thu, Sat
+- Dr. James Wilson (Orthopedic) - $140/visit - Mon, Tue, Thu, Fri
+- Dr. Aisha Patel (Pediatrician) - $90/visit - Mon-Sat
+
+Services: General Checkup ($80), Blood Test ($45), X-Ray ($120), ECG ($95), Vaccination ($35)
+
+Be professional, empathetic and helpful. For medical advice, always recommend consulting a doctor.
+Respond in the same language as the patient.`;
+
+let messages = [];
+
+function getTime() {
+  return new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+}
+
+function addMessage(text, isUser, isHTML = false) {
+  const div = document.createElement('div');
+  div.className = `message ${isUser ? 'user' : 'bot'}`;
+
+  const avatar = document.createElement('div');
+  avatar.className = `avatar ${isUser ? 'user-avatar' : 'bot-avatar'}`;
+  avatar.textContent = isUser ? 'You' : '🏥';
+
+  const wrapper = document.createElement('div');
+  const bubble = document.createElement('div');
+  bubble.className = 'bubble';
+  if (isHTML) bubble.innerHTML = text;
+  else bubble.textContent = text;
+
+  const time = document.createElement('div');
+  time.className = 'time';
+  time.textContent = getTime();
+
+  wrapper.appendChild(bubble);
+  wrapper.appendChild(time);
+  div.appendChild(avatar);
+  div.appendChild(wrapper);
+  chatArea.appendChild(div);
+  chatArea.scrollTop = chatArea.scrollHeight;
+}
+
+function showTyping() {
+  const div = document.createElement('div');
+  div.className = 'typing';
+  div.id = 'typing';
+  div.innerHTML = `
+    <div class="avatar bot-avatar">🏥</div>
+    <div class="typing-dots">
+      <div class="dot"></div>
+      <div class="dot"></div>
+      <div class="dot"></div>
+    </div>`;
+  chatArea.appendChild(div);
+  chatArea.scrollTop = chatArea.scrollHeight;
+}
+
+function removeTyping() {
+  const t = document.getElementById('typing');
+  if (t) t.remove();
+}
+
+function showDoctorCards() {
+  const doctors = [
+    {name: "Dr. Sarah Johnson", spec: "General Physician", fee: 80, days: "Mon-Fri", rating: "⭐ 4.9"},
+    {name: "Dr. Michael Chen", spec: "Cardiologist", fee: 150, days: "Mon, Wed, Fri", rating: "⭐ 4.8"},
+    {name: "Dr. Emily Rodriguez", spec: "Dermatologist", fee: 120, days: "Tue, Thu, Sat", rating: "⭐ 4.7"},
+    {name: "Dr. James Wilson", spec: "Orthopedic", fee: 140, days: "Mon, Tue, Thu, Fri", rating: "⭐ 4.8"},
+    {name: "Dr. Aisha Patel", spec: "Pediatrician", fee: 90, days: "Mon-Sat", rating: "⭐ 4.9"},
+  ];
+
+  const div = document.createElement('div');
+  div.className = 'message bot';
+  div.innerHTML = `<div class="avatar bot-avatar">🏥</div><div>`;
+
+  doctors.forEach(doc => {
+    const card = document.createElement('div');
+    card.className = 'doctor-card';
+    card.innerHTML = `
+      <h4>👨‍⚕️ ${doc.name}</h4>
+      <p>🏥 ${doc.spec} | ${doc.rating}</p>
+      <p>📅 ${doc.days} | 💰 $${doc.fee}/visit</p>
+      <button class="book-btn" onclick="selectOption('Book with ${doc.name}')">📅 Book Appointment</button>`;
+    div.querySelector('div').appendChild(card);
+  });
+
+  chatArea.appendChild(div);
+  chatArea.scrollTop = chatArea.scrollHeight;
+}
+
+async function sendMessage(text) {
+  const msg = text || userInput.value.trim();
+  if (!msg) return;
+
+  addMessage(msg, true);
+  userInput.value = '';
+  messages.push({role: 'user', content: msg});
+
+  showTyping();
+
+  try {
+    const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${GROQ_API_KEY}`
+      },
+      body: JSON.stringify({
+        model: 'llama-3.3-70b-versatile',
+        messages: [
+          {role: 'system', content: CLINIC_INFO},
+          ...messages.slice(-10)
+        ],
+        max_tokens: 512,
+        temperature: 0.7
+      })
+    });
+
+    const data = await response.json();
+    removeTyping();
+
+    const reply = data.choices?.[0]?.message?.content || "I'm sorry, I couldn't process that. Please try again.";
+    messages.push({role: 'assistant', content: reply});
+
+    // Check if should show doctor cards
+    if (msg.toLowerCase().includes('doctor') || msg.toLowerCase().includes('show me')) {
+      addMessage(reply, false);
+      showDoctorCards();
+    } else {
+      addMessage(reply, false);
+    }
+
+  } catch (err) {
+    removeTyping();
+    addMessage("I'm having trouble connecting. Please call us at +1-212-555-0200", false);
+  }
+}
+
+function selectOption(text) {
+  sendMessage(text);
+}
+
+function quickAction(type) {
+  const actions = {
+    book: 'I want to book an appointment',
+    doctors: 'Show me your doctors',
+    services: 'What services do you offer?',
+    hours: 'What are your opening hours?',
+    emergency: 'I need emergency help'
+  };
+  sendMessage(actions[type]);
+}
+</script>
+</body>
+</html>
